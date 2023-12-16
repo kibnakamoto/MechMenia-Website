@@ -1,0 +1,23 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/p5.min.js"></script>
+<script>
+  function setup() {
+      createCanvas(1000, 1000)
+  }
+  function draw() {
+	fill('white')
+    stroke('black')
+    drawNode(width/2, 20, 5)
+  }
+  
+  const ball_rad = 6
+  function drawNode(x, y, level) {
+    circle(x, y, ball_rad*2)
+    if(level > 0) {
+      	var space = pow(2, level) * 5
+        line(x, y+ball_rad, x - space, y + 30 - ball_rad)
+        line(x, y+ball_rad, x + space, y + 30 - ball_rad)
+    	drawNode(x - space, y + 30, level-1)
+    	drawNode(x + space, y + 30, level-1)
+    }
+  }
+</script>
