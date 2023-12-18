@@ -1,23 +1,84 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/p5.min.js"></script>
 <script>
+  let table;
+      
+  function new_tree_node(level) {
+    let node = { winner: "none"}
+    if(level > 0) {
+      node.child1 = new_tree_node(level-1)
+      node.child2 = new_tree_node(level-1)
+    }
+    return node
+  }
+  
+  let tree = new_tree_node(3)
+  
+  console.log(tree)
   function setup() {
       createCanvas(1000, 1000)
+      assignNames()
+      console.table(table)
   }
   function draw() {
 	fill('white')
     stroke('black')
-    drawNode(width/2, 20, 5)
+    drawTree(width/2, height/3, 3)
+    drawInverseTree(width/2, height/3, 3)
+    displayNames()
   }
   
-  const ball_rad = 6
-  function drawNode(x, y, level) {
-    circle(x, y, ball_rad*2)
-    if(level > 0) {
-      	var space = pow(2, level) * 5
-        line(x, y+ball_rad, x - space, y + 30 - ball_rad)
-        line(x, y+ball_rad, x + space, y + 30 - ball_rad)
-    	drawNode(x - space, y + 30, level-1)
-    	drawNode(x + space, y + 30, level-1)
+  const ball_rad = 10
+  function drawTree(x, y, level) {
+    circle(x, y, ball_rad * 2);
+    if (level > 0) {
+      var space = pow(2, level) * 10;
+      line(x + ball_rad, y, x + 60 - ball_rad, y - space);
+      line(x + ball_rad, y, x + 60 - ball_rad, y + space);
+      drawTree(x + 60, y - space, level - 1);
+      drawTree(x + 60, y + space, level - 1);    }
+  }
+  
+  function drawInverseTree(x, y, level) {
+    circle(x, y, ball_rad * 2);
+    if (level > 0) {
+      var space = pow(2, level) * 10;
+      line(x - ball_rad, y, x - 60 + ball_rad, y - space);
+      line(x - ball_rad, y, x - 60 + ball_rad, y + space);
+      drawInverseTree(x - 60, y - space, level - 1);
+      drawInverseTree(x - 60, y + space, level - 1);
     }
   }
+  
+  function displayNames()
+  {
+    textAlign(LEFT, TOP);
+    fill(0);
+    noStroke()
+    textFont('Roboto', 16);
+    
+    
+    let tableX = 20;
+    let tableY = height / 5;
+
+    // Display column headers
+    text('Names', tableX, tableY - 20);
+    text('ID', tableX + 200, tableY - 20);
+
+    // Display data
+    for (let i = 0; i < table.length; i++) {
+      text(table[i].name, tableX, tableY + i * 20);
+      text(table[i].number, tableX + 200, tableY + i * 20);
+    }
+  }
+
+  // assign each name to a number
+  function assignNames()
+  {
+	table = [];
+    for (let i = 1; i <= 16; i++) {
+      table.push({ name: names[i-1], number: i });
+    }
+  }
+  
+    const names = ["Alice", "Bob", "Charlie", "David", "Emma", "Frank", "Grace", "Hank", "Ivy", "Jack", "Kate", "Liam", "Mia", "Noah", "Olivia", "Jordan"];
 </script>
