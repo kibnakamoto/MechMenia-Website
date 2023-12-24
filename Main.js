@@ -4,12 +4,25 @@ console.log("path: " + path);
 
 const proj_name = document.getElementById("project-name").value
 
-if(path == "") {
-	content = tab('index.html').replace("PROJNAME", proj_name)
+if(path == ""|| path == "index.html") {
+	content = tab('index.html')//.replace("PROJNAME", proj_name)
 }
 else if(path == "test.html") {
-  content = tab('test.html').replace("PROJNAME", proj_name)
+  content = tab('test.html')//.replace("PROJNAME", proj_name)
 }
+
+else if(path == "PastW.html") {
+  content = tab("PastW.html")
+}
+
+else if(path == "signup.html") {
+  content = tab("signup.html")
+}
+
+else if(path == "contact.html") {
+  content = tab("contact.html")
+}
+
 else if(path == "post") {
   	if(query.password == "123") {
     	content = "Posted succesfully"
