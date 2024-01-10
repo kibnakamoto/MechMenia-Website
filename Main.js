@@ -1,11 +1,13 @@
-content = tab('about.html') // https://petercastell.ca/editor
+content = tab('index.html') // https://petercastell.ca/editor
 
 console.log("path: " + path);
 
-//const proj_name = document.getElementById("project-name").value
 
-if(path == ""|| path == "index.html") {
-	content = tab('index.html')//.replace("PROJNAME", proj_name)
+if(path == "" || path == "index.html") {
+	content = tab('index.html')
+}
+else if(path == "style.css") {
+  content = tab("style.css")
 }
 else if(path == "test.html") {
   content = tab('test.html')//.replace("PROJNAME", proj_name)
@@ -22,15 +24,9 @@ else if(path == "signup.html") {
 else if(path == "contact.html") {
   content = tab("contact.html")
 }
-
-else if(path == "currentboard.html") {
-  content = tab("currentboard.html")
+else if(path == "about.html") {
+  content = tab("about.html")
 }
-
-else if(path == "About.html") {
-  content = tab("About.html")
-}
-
 
 else if(path == "post") {
   	if(query.password == "123") {
