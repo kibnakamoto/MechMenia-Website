@@ -1,0 +1,27 @@
+.navbar {
+  background-color: #1e73d2;
+  color: #ffffff;
+  box-shadow: 0 10px #0a1e37;
+}
+
+.sr-only {
+  background-color: #1e73d2;
+  color: #ffffff;
+  box-shadow: 0 10px #0a1e37;  
+}
+
+.nav-item:hover {
+  background-color: #dce6f0;
+  box-shadow: 0 20px darkgray;
+}
+
+.nav-link {
+  color: #ffffff !important;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: bold;
+}
+
+
+.nav-link:hover {
+  color: #595959 !important;
+}
