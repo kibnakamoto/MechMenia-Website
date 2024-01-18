@@ -1,0 +1,285 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.8.0/p5.min.js"></script>
+
+<script>
+  let table;
+  let LEVELS = 4;
+  let ISADMIN = false;
+	
+  const gay_words = ["gay", "rbg"]
+  
+  function flashWrong(element, password) {
+    if(gay_words.includes(password))
+    	element.style.animation = "flashgay 0.5s ease";
+    else
+    	element.style.animation = "flashred 0.5s ease";
+    element.onanimationend =()=> element.style.animation = null;
+  }
+  
+  function new_empty_tree() {
+    var tree = new_tree_node(LEVELS);
+    link_tree_parents(tree);
+    return tree;
+  }
+
+  function new_tree() {
+    var tree = new_tree_node(LEVELS);
+    link_tree_parents(tree);
+    return tree;
+  }
+
+  function new_tree_node(level) {
+    let node = { winner: "none" };
+    if (level > 0) {
+      node.child1 = new_tree_node(level - 1);
+      node.child2 = new_tree_node(level - 1);
+    }
+
+    var current_player = 1;
+    function assign(t) {
+      if (t.child1) {
+        assign(t.child1);
+        assign(t.child2);
+      } else {
+        t.winner = current_player;
+        current_player += 1;
+      }
+    }
+    assign(node);
+    return node;
+  }
+
+  function link_tree_parents(tree) {
+    if (tree.child1) {
+      tree.child1.parent = tree;
+      tree.child2.parent = tree;
+      link_tree_parents(tree.child1);
+      link_tree_parents(tree.child2);
+    }
+  }
+
+  function tree_to_string(tree) {
+    return JSON.stringify(tree, function (key, value) {
+      if (key == "parent") return undefined;
+      return value;
+    });
+  }
+
+  function post_to_server(password, data) {
+    fetch("MechMania/post?password="+password, {
+      method: "POST",
+      body: data
+    }).then(v=>v.text()).then(v=>flashWrong(document.querySelector("input[type=password]"), password))
+  }
+  
+  async function fetch_tree_from_server() {
+  try {
+    let response = await fetch("MechMania/get");
+    if (response.ok) {
+      let treeData = await response.json(); // Parse response as JSON
+
+      if (isValidTree(treeData)) {
+        let tree = treeData; // No need to parse again
+        link_tree_parents(tree);
+        return tree;
+      } else {
+        return new_empty_tree();
+      }
+    } else {
+      // Handle non-OK response, e.g., 404 or 500
+      console.error(`Server response not OK: ${response.status}`);
+      return new_empty_tree();
+    }
+  } catch (error) {
+    console.error('Error fetching tree from server:', error);
+    return new_empty_tree();
+  }
+}
+
+  function isValidTree(tree) {
+    // Add your validation logic here
+    return true; // Placeholder, you might want to improve this
+  }
+
+  let tree;
+  async function initializeTree() {
+    tree = await fetch_tree_from_server();
+    console.log(tree);
+  }
+
+  initializeTree();
+  
+  function update_globaly() {
+    var password = document.querySelector('input[type=password]').value;
+    if (password) {
+      post_to_server(password, tree_to_string(tree));
+    }
+  }
+
+  function setup() {
+    createCanvas(800, 400);
+    assignNames();
+    console.table(table);
+  }
+
+  function draw() {
+    if (!tree) return;
+    displayNames();
+    drawFullTree(525, height/2, LEVELS, tree);
+  }
+
+  const ball_rad = 10;
+
+  function drawFullTree(x, y, level, tree) {
+    fill("white");
+    stroke("black");
+    circle(x, y, ball_rad * 2);
+    if (tree.winner != "none") {
+      fill("black");
+      textAlign(CENTER, CENTER);
+      text(tree.winner, x, y);
+    }
+    if (level > 0) {
+      //right ride
+      node_line(tree, tree.child1, x + ball_rad, y, x + 60 - ball_rad, y);
+      drawTree(x + 60, y, level - 1, tree.child1);
+      //left side
+      node_line(tree, tree.child2, x - ball_rad, y, x - 60 + ball_rad, y);
+      drawInverseTree(x - 60, y, level - 1, tree.child2);
+    }
+    checkClick(x, y, tree);
+  }
+
+  function drawTree(x, y, level, tree) {
+    if (!tree) return; // Add this check to handle undefined tree
+
+    fill("white");
+    stroke("black");
+    circle(x, y, ball_rad * 2);
+    if (tree.winner != "none") {
+      fill("black");
+      textAlign(CENTER, CENTER);
+      text(tree.winner, x, y);
+    }
+    if (level > 0) {
+      var space = pow(2, level) * 10;
+      node_line(tree, tree.child1, x + ball_rad, y, x + 60 - ball_rad, y - space);
+      node_line(tree, tree.child2, x + ball_rad, y, x + 60 - ball_rad, y + space);
+      drawTree(x + 60, y - space, level - 1, tree.child1);
+      drawTree(x + 60, y + space, level - 1, tree.child2);
+    }
+    checkClick(x, y, tree);
+  }
+
+  function drawInverseTree(x, y, level, tree) {
+    if (!tree) return; // Add this check to handle undefined tree
+
+    fill("white");
+    stroke("black");
+    circle(x, y, ball_rad * 2);
+    if (tree.winner != "none") {
+      fill("black");
+      textAlign(CENTER, CENTER);
+      text(tree.winner, x, y);
+    }
+    if (level > 0) {
+      var space = pow(2, level) * 10;
+      node_line(tree, tree.child1, x - ball_rad, y, x - 60 + ball_rad, y - space);
+      node_line(tree, tree.child2, x - ball_rad, y, x - 60 + ball_rad, y + space);
+      drawInverseTree(x - 60, y - space, level - 1, tree.child1);
+      drawInverseTree(x - 60, y + space, level - 1, tree.child2);
+    }
+    checkClick(x, y, tree);
+  }
+
+  function checkClick(x, y, tree) {
+    if (mouseIsPressed && tree) {
+      if (sq(x - mouseX) + sq(y - mouseY) < sq(ball_rad * 2)) {
+        if (tree.parent) {
+          tree.parent.winner = tree.winner;
+        }
+      }
+    }
+  }
+
+  function node_line(tree1, tree2, x1, y1, x2, y2) {
+    if (tree1 && tree2) {
+      if (tree1.winner == tree2.winner && tree1.winner != "none") stroke("green");
+      else if (tree1.winner != tree2.winner && tree1.winner != "none") stroke("red");
+      else stroke("black");
+      line(x1, y1, x2, y2);
+    }
+  }
+
+  function displayNames() {
+    textAlign(LEFT, TOP);
+    fill(0);
+    noStroke();
+    textFont("Roboto", 16);
+
+    let tableX = 20;
+    let tableY = 30;
+
+    // Display column headers
+    text("Names", tableX, tableY - 20);
+    text("ID", tableX + 200, tableY - 20);
+
+    // Display data
+    for (let i = 0; i < table.length; i++) {
+      text(table[i].name, tableX, tableY + i * 20);
+      text(table[i].number, tableX + 200, tableY + i * 20);
+    }
+  }
+
+  function assignNames() {
+    table = [];
+    for (let i = 1; i <= pow(2, LEVELS); i++) {
+      table.push({ name: names[i - 1], number: i });
+    }
+  }
+
+  const names = [
+    "Alice",
+    "Bob",
+    "Charlie",
+    "David",
+    "Emma",
+    "Frank",
+    "Grace",
+    "Hank",
+    "Ivy",
+    "Jack",
+    "Kate",
+    "Liam",
+    "Mia",
+    "Noah",
+    "Olivia",
+    "Jordan",
+  ];
+</script>
+<button onclick="update_globaly()">
+  Update Globally
+</button>
+<button onclick="tree = new_empty_tree(); update_globaly();">
+  Clear Tree
+</button>
+<input placeholder="Password" type="password"/>
+<style>
+  :root {
+    --gay: linear-gradient(90deg, rgba(255,0,0,1) 0%, rgba(255,154,0,1) 10%, rgba(208,222,33,1) 20%, rgba(79,220,74,1) 30%, rgba(63,218,216,1) 40%, rgba(47,201,226,1) 50%, rgba(28,127,238,1) 60%, rgba(95,21,242,1) 70%, rgba(186,12,248,1) 80%, rgba(251,7,217,1) 90%, rgba(255,0,0,1) 100%);
+  }
+  button, input {
+    border-radius: 0;
+    padding: 4px;
+    border: none;
+    background: lightgrey;
+  }
+  button:hover, input:hover {
+    background: grey;
+  }
+  @keyframes flashred {
+    0% { background: red; }
+  }
+  @keyframes flashgay {
+    0% { background: var(--gay); }
+  }
+</style>
